@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "MSVC debugger",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${fileDirname}\\bin\\${fileBasenameNoExtension}.exe",
+      "args": [],
+      "stopAtEntry": true,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "MSVC build"
+    },
+    {
+      "name": "GDB Debugger",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${fileDirname}\\bin\\${fileBasenameNoExtension}.exe",
+      "args": [],
+      "stopAtEntry": true,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "internalConsoleOptions": "neverOpen",
+      "MIMode": "gdb",
+      "miDebuggerPath": "D:\\Dennis\\Apps\\mingw64\\bin\\gdb.exe",
+      "preLaunchTask": "GCC build"
+    }
+  ]
+}

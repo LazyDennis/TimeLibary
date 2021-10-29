@@ -1,0 +1,99 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell", //使用命令行程序
+      "label": "MSVC build", //与lauch.json中"prelaunchtask"键值的对应
+      "command": "cl.exe",
+      "args": [
+        "/Zi",
+        "/EHsc",
+        "/FS",
+        "/source-charset:gbk", //utf-8",
+        "/execution-charset:gbk", //utf-8",
+        "/Zc:__cplusplus", //启用更新的__cplusplus宏，与"/std:"配合使用
+        "/std:c++17",
+        "/Fe:", //目标输出文件名参数
+        "${fileDirname}\\bin\\${fileBasenameNoExtension}.exe", //目标文件名，必须紧跟"/Fe:"后
+        "${fileDirname}\\*.cpp"
+      ],
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "problemMatcher": ["$msCompile"],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "compiler: cl.exe"
+    },
+    {
+      "label": "GCC build",
+      "type": "shell",
+      "command": "g++",
+      "args": [
+        "${fileDirname}\\*.cpp",
+        "-o",
+        "${fileDirname}\\bin\\${fileBasenameNoExtension}.exe",
+        "-g",
+        "-Wall",
+        "-static-libgcc",
+        "-finput-charset=UTF-8",
+        "-fexec-charset=UTF-8",
+        "-std=c++17"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$gcc"
+    },
+    {
+      "label": "GCC run",
+      "type": "shell",
+      "dependsOn": "build",
+      "command": "${fileDirname}\\bin\\${fileBasenameNoExtension}.exe",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      }
+    },
+    {
+      "type": "cppbuild",
+      "label": "C/C++: g++.exe 生成活动文件",
+      "command": "D:\\Dennis\\Apps\\MinGW64\\bin\\g++.exe",
+      "args": [
+        "-g",
+        "${file}",
+        "-o",
+        "${fileDirname}\\bin\\${fileBasenameNoExtension}.exe"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "调试器生成的任务。"
+    }
+  ]
+}
