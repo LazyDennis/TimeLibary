@@ -18,6 +18,15 @@
     <ClInclude Include="TimeLibary.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="StopWatch.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeCount.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">

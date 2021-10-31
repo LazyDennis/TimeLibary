@@ -14,7 +14,7 @@ namespace TimeLibary
     class BasicTime : protected timespec
     {
     private:
-        static const long MaxNSec = 999999999l;            // tv_nsec in [0, 999999999]
+        static const long MaxNSec = 1e9 - 1l;            // tv_nsec in [0, 999999999]
         static const time_t MaxSec = 0x7FFFFFFFFFFFFFFFll; // maximum value of time_t type.
 
     public:
@@ -25,6 +25,13 @@ namespace TimeLibary
         explicit BasicTime(const timespec &_TimeSpec) noexcept : timespec(_TimeSpec) {}
 
         ~BasicTime() = default;
+
+        static BasicTime now()
+        {
+            BasicTime TempTime;
+            std::timespec_get(&TempTime, TIME_UTC);
+            return TempTime;
+        }
 
         const BasicTime &operator=(const BasicTime &_OtherBasicTime) noexcept
         {
@@ -207,7 +214,7 @@ namespace TimeLibary
                 std::to_string(TimeStruct->tm_mday);
         }
 
-        std::wstring TimewString(/*const CharT *_format*/) const noexcept
+        std::wstring TimeWString(/*const CharT *_format*/) const noexcept
         {
             std::tm *TimeStruct;
             TimeStruct = localtime(&this->tv_sec);
@@ -220,6 +227,7 @@ namespace TimeLibary
             timespec &_TimeSpec, const BasicTime &_BasicTime) noexcept;
         friend const timespec &operator-=(
             timespec &_TimeSpec, const BasicTime &_BasicTime) noexcept;
+        friend int timespec_get(BasicTime &_BasicTime) noexcept;
 
     }; // class BasicTime
 
@@ -274,6 +282,10 @@ namespace TimeLibary
         return _TimeSpec;
     }
 
+    int timespec_get(BasicTime &_BasicTime) noexcept
+    {
+        return std::timespec_get(&_BasicTime, TIME_UTC);
+    }
 
     BasicTime GetFileTime(const std::filesystem::path &_FilePath)
     {

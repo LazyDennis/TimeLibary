@@ -1,9 +1,9 @@
-#include "FileTime.hpp"
+#include "TimeLibary.hpp"
 #include <iostream>
 
 int main()
 {
-    using namespace DennisHui;
+    using namespace TimeLibary;
     BasicTime time0(timespec({500, 123456000}));
     BasicTime time1(std::time_t(700));
     auto time2 = time0 + time1;
