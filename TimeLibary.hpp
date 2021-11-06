@@ -11,76 +11,69 @@ namespace TimeLibary
 {
     using std::time_t;
     using std::timespec;
-    class BasicTime : protected timespec
+    class BasicTime// : protected timespec
     {
     private:
+        timespec data_;
+
+    public:
         static const long MaxNSec = 1e9 - 1l;            // tv_nsec in [0, 999999999]
         static const time_t MaxSec = 0x7FFFFFFFFFFFFFFFll; // maximum value of time_t type.
 
-    public:
-        BasicTime() noexcept = default;
-        BasicTime(const BasicTime &_OtherBasicTime) = default;
-        BasicTime(BasicTime &&_OtherBasicTime) = default;
-        explicit BasicTime(time_t _CTime) noexcept : timespec({_CTime, 0}) {}
-        explicit BasicTime(const timespec &_TimeSpec) noexcept : timespec(_TimeSpec) {}
+        BasicTime() noexcept {}
+        BasicTime(const BasicTime &_OtherBasicTime) noexcept : data_(_OtherBasicTime.data_) {}
+        BasicTime(BasicTime &&_OtherBasicTime) noexcept : data_(_OtherBasicTime.data_) {}
+        explicit BasicTime(time_t _CTime) noexcept : data_({_CTime, 0}) {}
+        /*explicit */BasicTime(const timespec &_TimeSpec) noexcept : data_(_TimeSpec) {}
 
         ~BasicTime() = default;
 
-        static BasicTime now()
-        {
-            BasicTime TempTime;
-            std::timespec_get(&TempTime, TIME_UTC);
-            return TempTime;
-        }
-
         const BasicTime &operator=(const BasicTime &_OtherBasicTime) noexcept
         {
-            tv_sec = _OtherBasicTime.tv_sec;
-            tv_nsec = _OtherBasicTime.tv_nsec;
+            data_ = _OtherBasicTime.data_;
             return *this;
         }
         const BasicTime &operator=(BasicTime &&_OtherBasicTime) noexcept
         {
-            tv_sec = _OtherBasicTime.tv_sec;
-            tv_nsec = _OtherBasicTime.tv_nsec;
+            data_ = _OtherBasicTime.data_;
             return *this;
         }
         const BasicTime &operator=(time_t _CTime) noexcept
         {
-            tv_sec = _CTime;
+            data_.tv_sec = _CTime;
             return *this;
         }
         const BasicTime &operator=(const timespec &_TimeSpec) noexcept
         {
-            tv_nsec = _TimeSpec.tv_nsec;
-            tv_sec = _TimeSpec.tv_sec;
+            data_ = _TimeSpec;
             return *this;
         }
 
-        operator time_t() noexcept { return tv_sec; }
-        operator timespec() noexcept { return timespec({tv_sec, tv_nsec}); }
+        //&operator time_t() noexcept { return data_.tv_sec; }
+        //&operator long() noexcept { return data_.tv_nsec; }
+        &operator timespec() noexcept { return data_; }
 
         BasicTime operator+(const BasicTime &_OtherBasicTime) const noexcept
         {
             BasicTime TempTime;
-            long long TempNSec = long long(tv_nsec) + _OtherBasicTime.tv_nsec;
+            long long TempNSec = long long(data_.tv_nsec) + _OtherBasicTime.data_.tv_nsec;
             auto Carrybit = TempNSec / (MaxNSec + 1);
-            if (MaxSec - _OtherBasicTime.tv_sec - Carrybit > tv_sec) // check if plus result overflows.
+            if (MaxSec - _OtherBasicTime.data_.tv_sec - Carrybit > data_.tv_sec) // check if plus result overflows.
             {
-                TempTime.tv_nsec = TempNSec % (MaxNSec + 1);
-                TempTime.tv_sec = tv_sec + Carrybit +
-                                  _OtherBasicTime.tv_sec;
+                TempTime.data_.tv_nsec = TempNSec % (MaxNSec + 1);
+                TempTime.data_.tv_sec = data_.tv_sec + Carrybit +
+                    _OtherBasicTime.data_.tv_sec;
             }
             else
             {
-                TempTime.tv_sec = MaxSec;
-                TempTime.tv_nsec = MaxNSec;
+                TempTime.data_.tv_sec = MaxSec;
+                TempTime.data_.tv_nsec = MaxNSec;
             }
             return TempTime;
         }
         BasicTime operator+(time_t _CTime) const noexcept
         {
-            return BasicTime({tv_sec + _CTime, tv_nsec});
+            return BasicTime({data_.tv_sec + _CTime, data_.tv_nsec});
         }
         BasicTime operator+(const timespec &_TimeSpec) const noexcept
         {
@@ -90,25 +83,25 @@ namespace TimeLibary
         BasicTime operator-(const BasicTime &_OtherBasicTime) const noexcept
         {
             BasicTime TempTime;
-            long long Borrowbit = (tv_nsec < _OtherBasicTime.tv_nsec),
-                      SecondSign = (~MaxSec) & tv_sec, // save sign of tv_sec in SecondSign
-                TempSec = tv_sec & MaxSec;             // absolute value of tv_sec.
-            if (MaxSec - TempSec - Borrowbit > (_OtherBasicTime.tv_sec & MaxSec))
+            long long Borrowbit = (data_.tv_nsec < _OtherBasicTime.data_.tv_nsec),
+                SecondSign = (~MaxSec) & data_.tv_sec, // save sign of tv_sec in SecondSign
+                TempSec = data_.tv_sec & MaxSec;             // absolute value of tv_sec.
+            if (MaxSec - TempSec - Borrowbit > (_OtherBasicTime.data_.tv_sec & MaxSec))
             {
-                TempTime.tv_sec = tv_sec - Borrowbit - _OtherBasicTime.tv_sec;
-                TempTime.tv_nsec = long long(tv_nsec) - _OtherBasicTime.tv_nsec +
-                                   (MaxNSec + 1) * Borrowbit;
+                TempTime.data_.tv_sec = data_.tv_sec - Borrowbit - _OtherBasicTime.data_.tv_sec;
+                TempTime.data_.tv_nsec = long long(data_.tv_nsec) - _OtherBasicTime.data_.tv_nsec +
+                    (MaxNSec + 1) * Borrowbit;
             }
             else
             {
-                TempTime.tv_sec = MaxSec | SecondSign;
-                TempTime.tv_nsec = MaxNSec;
+                TempTime.data_.tv_sec = MaxSec | SecondSign;
+                TempTime.data_.tv_nsec = MaxNSec;
             }
             return TempTime;
         }
         BasicTime operator-(time_t _CTime) const noexcept
         {
-            return BasicTime({tv_sec - _CTime, tv_nsec});
+            return BasicTime({data_.tv_sec - _CTime, data_.tv_nsec});
         }
         BasicTime operator-(const timespec &_TimeSpec) const noexcept
         {
@@ -118,9 +111,9 @@ namespace TimeLibary
         BasicTime operator*(long _Times) const noexcept
         {
             BasicTime TempTime;
-            long long TempNSec = (long long)tv_nsec * _Times;
-            TempTime.tv_sec = tv_sec + TempNSec / (MaxNSec + 1);
-            TempTime.tv_nsec = tv_nsec + TempNSec % (MaxNSec + 1);
+            long long TempNSec = (long long)data_.tv_nsec * _Times;
+            TempTime.data_.tv_sec = data_.tv_sec + TempNSec / (MaxNSec + 1);
+            TempTime.data_.tv_nsec = data_.tv_nsec + TempNSec % (MaxNSec + 1);
             return TempTime;
         }
         BasicTime operator/(long _Divisor) const noexcept
@@ -128,14 +121,14 @@ namespace TimeLibary
             BasicTime TempTime;
             if (_Divisor)
             {
-                TempTime.tv_sec = tv_sec / _Divisor;
-                TempTime.tv_nsec = (tv_sec % _Divisor * (MaxNSec + 1) + tv_nsec) /
-                                   _Divisor;
+                TempTime.data_.tv_sec = data_.tv_sec / _Divisor;
+                TempTime.data_.tv_nsec = (data_.tv_sec % _Divisor * (MaxNSec + 1) + data_.tv_nsec) /
+                    _Divisor;
             }
             else
             {
-                TempTime.tv_sec = MaxSec;
-                TempTime.tv_nsec = MaxNSec;
+                TempTime.data_.tv_sec = MaxSec;
+                TempTime.data_.tv_nsec = MaxNSec;
             }
             return TempTime;
         }
@@ -147,7 +140,7 @@ namespace TimeLibary
         }
         const BasicTime &operator+=(time_t _CTime) noexcept
         {
-            tv_sec += _CTime;
+            data_.tv_sec += _CTime;
             return *this;
         }
         const BasicTime &operator+=(const timespec &_TimeSpec) noexcept
@@ -163,7 +156,7 @@ namespace TimeLibary
         }
         const BasicTime &operator-=(time_t _CTime) noexcept
         {
-            tv_sec -= _CTime;
+            data_.tv_sec -= _CTime;
             return *this;
         }
         const BasicTime &operator-=(const timespec &_TimeSpec) noexcept
@@ -183,51 +176,60 @@ namespace TimeLibary
             return *this;
         }
 
-        long NanoSecond() const noexcept { return tv_nsec; }
+        long NanoSecond() const noexcept { return data_.tv_nsec; }
         void NanoSecond(long _nsec) noexcept
         {
-            tv_nsec = _nsec % (MaxNSec + 1);
-            tv_sec += (_nsec / (MaxNSec + 1));
+            data_.tv_nsec = _nsec % (MaxNSec + 1);
+            data_.tv_sec += (_nsec / (MaxNSec + 1));
             return;
         }
 
-        time_t IntegerSecond() const noexcept { return tv_sec; }
-        void IntegerSecond(time_t _sec) noexcept { tv_sec = _sec; }
+        time_t IntSecond() const noexcept { return data_.tv_sec; }
+        void IntSecond(time_t _sec) noexcept { data_.tv_sec = _sec; }
 
         long double Seconds() const noexcept
         {
-            return tv_sec + tv_nsec / (long double)(MaxNSec + 1);
+            return data_.tv_sec + data_.tv_nsec / (long double)(MaxNSec + 1);
         }
         void Seconds(long double _Seconds) noexcept
         {
-            tv_sec = time_t(_Seconds);
-            tv_nsec = long((_Seconds - tv_sec) * (MaxNSec + 1));
+            data_.tv_sec = time_t(_Seconds);
+            data_.tv_nsec = long((_Seconds - data_.tv_sec) * (MaxNSec + 1));
             return;
         }
 
         std::string TimeString(/*const CharT *_format*/) const noexcept
         {
             std::tm *TimeStruct;
-            TimeStruct = localtime(&this->tv_sec);
-            return std::to_string(TimeStruct->tm_year + 1900) + "/" + 
-                std::to_string(TimeStruct->tm_mon + 1) + "/" + 
+            TimeStruct = localtime(&this->data_.tv_sec);
+            return std::to_string(TimeStruct->tm_year + 1900) + "/" +
+                std::to_string(TimeStruct->tm_mon + 1) + "/" +
                 std::to_string(TimeStruct->tm_mday);
         }
 
         std::wstring TimeWString(/*const CharT *_format*/) const noexcept
         {
             std::tm *TimeStruct;
-            TimeStruct = localtime(&this->tv_sec);
-            return std::to_wstring(TimeStruct->tm_year + 1900) + L"/" + 
-                std::to_wstring(TimeStruct->tm_mon + 1) + L"/" + 
+            TimeStruct = localtime(&this->data_.tv_sec);
+            return std::to_wstring(TimeStruct->tm_year + 1900) + L"/" +
+                std::to_wstring(TimeStruct->tm_mon + 1) + L"/" +
                 std::to_wstring(TimeStruct->tm_mday);
         }
 
-        friend const timespec &operator+=(
+
+        static BasicTime now()
+        {
+            BasicTime TempTime;
+            std::timespec_get(&TempTime.data_, TIME_UTC);
+            return TempTime;
+        }
+
+
+        /*friend const timespec &operator+=(
             timespec &_TimeSpec, const BasicTime &_BasicTime) noexcept;
         friend const timespec &operator-=(
-            timespec &_TimeSpec, const BasicTime &_BasicTime) noexcept;
-        friend int timespec_get(BasicTime &_BasicTime) noexcept;
+            timespec &_TimeSpec, const BasicTime &_BasicTime) noexcept;*/
+        //friend int timespec_get(BasicTime &_BasicTime) noexcept;
 
     }; // class BasicTime
 
@@ -236,7 +238,7 @@ namespace TimeLibary
         return _BasicTime + _CTime;
     }
     BasicTime operator+(const timespec &_TimeSpec,
-                        const BasicTime &_BasicTime) noexcept
+        const BasicTime &_BasicTime) noexcept
     {
         return _BasicTime + _TimeSpec;
     }
@@ -246,7 +248,7 @@ namespace TimeLibary
         return BasicTime(_CTime) - _BasicTime;
     }
     BasicTime operator-(const timespec &_TimeSpec,
-                        const BasicTime &_BasicTime) noexcept
+        const BasicTime &_BasicTime) noexcept
     {
         return BasicTime(_TimeSpec) - _BasicTime;
     }
@@ -257,35 +259,35 @@ namespace TimeLibary
     }
 
     time_t operator+=(time_t &_CTime,
-                      const BasicTime &_BasicTime) noexcept
+        const BasicTime &_BasicTime) noexcept
     {
         _CTime = time_t(_BasicTime + _CTime);
         return _CTime;
     }
     const timespec &operator+=(timespec &_TimeSpec,
-                               const BasicTime &_BasicTime) noexcept
+        const BasicTime &_BasicTime) noexcept
     {
-        _TimeSpec = timespec(_TimeSpec + _BasicTime);
+        _TimeSpec = timespec(_BasicTime + _TimeSpec);
         return _TimeSpec;
     }
 
     time_t operator-=(time_t &_CTime,
-                      const BasicTime &_BasicTime) noexcept
+        const BasicTime &_BasicTime) noexcept
     {
         _CTime = time_t(_CTime - _BasicTime);
         return _CTime;
     }
     const timespec &operator-=(timespec &_TimeSpec,
-                               const BasicTime &_BasicTime) noexcept
+        const BasicTime &_BasicTime) noexcept
     {
         _TimeSpec = timespec(_TimeSpec - _BasicTime);
         return _TimeSpec;
     }
 
-    int timespec_get(BasicTime &_BasicTime) noexcept
+    /*int timespec_get(BasicTime &_BasicTime) noexcept
     {
         return std::timespec_get(&_BasicTime, TIME_UTC);
-    }
+    }*/
 
     BasicTime GetFileTime(const std::filesystem::path &_FilePath)
     {
