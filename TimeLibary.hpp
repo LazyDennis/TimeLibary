@@ -1,6 +1,7 @@
 #pragma once
 #ifndef _TIMELIB_HPP
 #define _TIMELIB_HPP
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <chrono>
 #include <ctime>
@@ -49,9 +50,11 @@ namespace TimeLibary
             return *this;
         }
 
-        //&operator time_t() noexcept { return data_.tv_sec; }
+        operator time_t() noexcept { return data_.tv_sec; }
         //&operator long() noexcept { return data_.tv_nsec; }
-        &operator timespec() noexcept { return data_; }
+        operator timespec &() noexcept { return data_; }
+        operator timespec() noexcept { return data_; }
+        operator timespec *() noexcept { return &data_; }
 
         BasicTime operator+(const BasicTime &_OtherBasicTime) const noexcept
         {
@@ -198,23 +201,32 @@ namespace TimeLibary
             return;
         }
 
-        std::string TimeString(/*const CharT *_format*/) const noexcept
+        std::string ToString(const std::string &format_)
         {
             std::tm *TimeStruct;
-            TimeStruct = localtime(&this->data_.tv_sec);
-            return std::to_string(TimeStruct->tm_year + 1900) + "/" +
-                std::to_string(TimeStruct->tm_mon + 1) + "/" +
-                std::to_string(TimeStruct->tm_mday);
+            std::string timestring(100, '\0');
+            TimeStruct = std::localtime(&data_.tv_sec);
+            std::strftime(timestring.data(), 100, format_.c_str(), TimeStruct);
+            return timestring;
         }
 
-        std::wstring TimeWString(/*const CharT *_format*/) const noexcept
-        {
-            std::tm *TimeStruct;
-            TimeStruct = localtime(&this->data_.tv_sec);
-            return std::to_wstring(TimeStruct->tm_year + 1900) + L"/" +
-                std::to_wstring(TimeStruct->tm_mon + 1) + L"/" +
-                std::to_wstring(TimeStruct->tm_mday);
-        }
+        //std::string TimeString(/*const CharT *_format*/) const noexcept
+        //{
+        //    std::tm *TimeStruct;
+        //    TimeStruct = localtime(&this->data_.tv_sec);
+        //    return std::to_string(TimeStruct->tm_year + 1900) + "/" +
+        //        std::to_string(TimeStruct->tm_mon + 1) + "/" +
+        //        std::to_string(TimeStruct->tm_mday);
+        //}
+
+        //std::wstring TimeWString(/*const CharT *_format*/) const noexcept
+        //{
+        //    std::tm *TimeStruct;
+        //    TimeStruct = localtime(&this->data_.tv_sec);
+        //    return std::to_wstring(TimeStruct->tm_year + 1900) + L"/" +
+        //        std::to_wstring(TimeStruct->tm_mon + 1) + L"/" +
+        //        std::to_wstring(TimeStruct->tm_mday);
+        //}
 
 
         static BasicTime now()
@@ -229,7 +241,7 @@ namespace TimeLibary
             timespec &_TimeSpec, const BasicTime &_BasicTime) noexcept;
         friend const timespec &operator-=(
             timespec &_TimeSpec, const BasicTime &_BasicTime) noexcept;*/
-        //friend int timespec_get(BasicTime &_BasicTime) noexcept;
+            //friend int timespec_get(BasicTime &_BasicTime) noexcept;
 
     }; // class BasicTime
 
