@@ -7,40 +7,40 @@ namespace TimeLibary
     class Timer : public TimeCount
     {
     private:
-        BasicTime set_time;
+        DTime settime_;
 
     public:
-        Timer(const BasicTime &s_t = BasicTime()) noexcept : set_time(s_t), TimeCount(s_t) {}
+        Timer(const DTime &_start = DTime()) noexcept : settime_(_start), TimeCount(_start) {}
         virtual ~Timer() noexcept {}
-        virtual void stop() noexcept
+        virtual void Stop() noexcept
         {
-            TimeCount::stop();
-            now_time = pause_time = set_time;
+            TimeCount::Stop();
+            nowtime_ = pausetime_ = settime_;
             return;
         }
-        virtual void reset() noexcept
+        virtual void Reset() noexcept
         {
-            TimeCount::reset();
-            set_time = 0;
+            TimeCount::Reset();
+            settime_ = 0.0;
             return;
         }
-        virtual const BasicTime &now() noexcept
+        virtual const DTime &Now() noexcept
         {
-            if (is_running())
+            if (Running())
             {
-                now_time = pause_time - BasicTime::now() + start_time;
-                if (now_time <= 0)
+                nowtime_ = pausetime_ - DTime::now() + starttime_;
+                if (nowtime_ <= 0.0)
                 {
-                    now_time = 0;
-                    TimeCount::stop();
+                    nowtime_ = 0.0;
+                    TimeCount::Stop();
                 }
             }
-            return now_time;
+            return nowtime_;
         }
 
-        void settime(const BasicTime &s_t) noexcept
+        void settime(const DTime &_start) noexcept
         {
-            set_time = now_time = pause_time = s_t;
+            settime_ = nowtime_ = pausetime_ = _start;
         }
     };
 } // TimeLibary

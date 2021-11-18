@@ -7,60 +7,60 @@ namespace TimeLibary
     class TimeCount
     {
     protected:
-        BasicTime start_time;
-        BasicTime pause_time;
-        BasicTime now_time;
+        DTime starttime_;
+        DTime pausetime_;
+        DTime nowtime_;
 
     private:
-        bool running;
-        bool paused;
-        bool stopped;
+        bool running_;
+        bool paused_;
+        bool stopped_;
 
     public:
-        TimeCount(const BasicTime &s_t = BasicTime()) noexcept
-            : running(false), paused(false), stopped(true), pause_time(s_t), now_time(s_t) {}
+        TimeCount(const DTime &_start = DTime()) noexcept
+            : running_(false), paused_(false), stopped_(true), pausetime_(_start), nowtime_(_start) {}
         virtual ~TimeCount() noexcept {}
 
-        virtual void start() noexcept
+        virtual void Start() noexcept
         {
-            if (!running)
+            if (!running_)
             {
-                start_time = BasicTime::now();
-                paused = stopped = false;
-                running = true;
+                starttime_ = DTime::now();
+                paused_ = stopped_ = false;
+                running_ = true;
             }
             return;
         }
-        virtual void pause() noexcept
+        virtual void Pause() noexcept
         {
-            if (running)
+            if (running_)
             {
-                if (pause_time == now_time)
-                    now();
-                pause_time = now_time;
-                running = false;
-                paused = !stopped;
+                if (pausetime_ == nowtime_)
+                    Now();
+                pausetime_ = nowtime_;
+                running_ = false;
+                paused_ = !stopped_;
             }
             return;
         }
-        virtual void stop() noexcept
+        virtual void Stop() noexcept
         {
-            running = paused = false;
-            stopped = true;
+            running_ = paused_ = false;
+            stopped_ = true;
             return;
         }
-        virtual void reset() noexcept
+        virtual void Reset() noexcept
         {
-            stop();
-            start_time = pause_time = now_time = 0;
+            Stop();
+            starttime_ = pausetime_ = nowtime_ = 0.0;
             return;
         }
 
-        bool is_running() const noexcept { return running; }
-        bool is_stopped() const noexcept { return stopped; }
-        bool is_paused() const noexcept { return paused; }
+        bool Running() const noexcept { return running_; }
+        bool Stopped() const noexcept { return stopped_; }
+        bool Paused() const noexcept { return paused_; }
 
-        virtual const BasicTime &now() noexcept = 0;
+        virtual const DTime &Now() noexcept = 0;
     };   
 } //TimeLibary
 
