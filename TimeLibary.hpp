@@ -10,6 +10,7 @@
 #include <string>
 #include <filesystem>
 
+#define VERSION 0.1.0b3
 #define TIMESPECTOD(x) (x.tv_sec + x.tv_nsec / DTimeType(1e9))
 
 namespace TimeLibary
@@ -29,7 +30,7 @@ namespace TimeLibary
         DTime(const DTime &_other) noexcept : time_(_other.time_) {}
         DTime(DTime &&_other) noexcept : time_(_other.time_) {}
         DTime(DTimeType _time) noexcept : time_(_time) {}
-        explicit DTime(time_t _ctime) noexcept : time_(_ctime) {}
+        explicit DTime(time_t _ctime) noexcept : time_((DTimeType)_ctime) {}
         explicit DTime(const timespec &_timespec) noexcept :
             time_(TIMESPECTOD(_timespec)) {}
 
@@ -52,7 +53,7 @@ namespace TimeLibary
         }
         const DTime &operator=(time_t _ctime) noexcept
         {
-            time_ = _ctime;
+            time_ = (DTimeType)_ctime;
             return *this;
         }
         const DTime &operator=(const timespec &_timespec) noexcept

@@ -12,11 +12,11 @@ namespace TimeLibary
     public:
         struct LapTime
         {
-            const unsigned int index_;
+            const size_t index_;
             const DTime lapt_;
             const DTime sumt_;
-            LapTime(int _index = 0, DTime _lapt = DTime(), DTime _start = DTime()) :
-                index_(_index >= 0 ? _index : -_index), lapt_(_lapt), sumt_(_start) {}
+            LapTime(size_t _index = 0, DTime _lapt = DTime(), DTime _start = DTime()) :
+                index_(_index), lapt_(_lapt), sumt_(_start) {}
             ~LapTime() {}
             //friend std::ostream &operator<<(std::ostream os, LapTime &lt) noexcept;
         };
@@ -38,7 +38,7 @@ namespace TimeLibary
     void stopwatch::Stop() noexcept
     {
         TimeCount::Stop();
-        starttime_ = pausetime_ = nowtime_ = 0.0;
+        starttime_ = pausetime_ = nowtime_ = (DTime::DTimeType)0;
         laptime_.clear();
     }
 
@@ -55,7 +55,7 @@ namespace TimeLibary
     {
         if (Running())
         {
-            laptime_.push_back(LapTime(laptime_.size(), nowtime_ - laptime_[laptime_.size() - 1].sumt_, nowtime_));
+            laptime_.emplace_back(laptime_.size(), nowtime_ - laptime_.back().sumt_, nowtime_);
         }
         return;
     }

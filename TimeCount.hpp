@@ -52,7 +52,7 @@ namespace TimeLibary
         virtual void Reset() noexcept
         {
             Stop();
-            starttime_ = pausetime_ = nowtime_ = 0.0;
+            starttime_ = pausetime_ = nowtime_ = (DTime::DTimeType)0;
             return;
         }
 
