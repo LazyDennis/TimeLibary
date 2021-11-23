@@ -25,7 +25,7 @@ namespace TimeLibary
         {
             if (!running_)
             {
-                starttime_ = DTime::now();
+                starttime_ = DTime::Now();
                 paused_ = stopped_ = false;
                 running_ = true;
             }

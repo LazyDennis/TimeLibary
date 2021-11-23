@@ -28,7 +28,7 @@ namespace TimeLibary
         {
             if (Running())
             {
-                nowtime_ = pausetime_ - DTime::now() + starttime_;
+                nowtime_ = pausetime_ - DTime::Now() + starttime_;
                 if (nowtime_ <= 0.0)
                 {
                     nowtime_ = 0.0;

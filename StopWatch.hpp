@@ -46,7 +46,7 @@ namespace TimeLibary
     {
         if (Running())
         {
-            nowtime_ = DTime::now() - starttime_ + pausetime_;
+            nowtime_ = DTime::Now() - starttime_ + pausetime_;
         }
         return nowtime_;
     }
