@@ -18,12 +18,22 @@ namespace TimeLibary
 {
     using std::time_t;
     using std::timespec;
+
+    class DTime;
+
+    template <class CharT>
+    std::basic_string<CharT> inttostr(long long _num) noexcept;
+    template <>
+    std::basic_string<char> inttostr(long long _num) noexcept;
+    template <>
+    std::basic_string<wchar_t> inttostr(long long _num) noexcept;
+
     class DTime
     {
     public:
         typedef double DTimeType;
         enum DTimeArea { Duration, Local };
-       
+
     private:
         DTimeType time_;
 
@@ -300,68 +310,68 @@ namespace TimeLibary
             return timestring;
 
         }
-        
+
         template <class CharT>
         std::basic_string<CharT> string(std::basic_string<CharT> _format, DTimeArea _timearea = Duration) const noexcept
         {
-            std::tm *TimeStruct;
+            std::tm TimeStruct;
             time_t temptime = time_t(time_);
             if (_timearea == Local)
-                TimeStruct = std::localtime(&temptime);
+                localtime_s(&TimeStruct, &temptime);
             else
-                TimeStruct = std::gmtime(&temptime);
-            std::basic_string<CharT> year = 
-                DUtility::tostr<CharT>(TimeStruct->tm_year + 1900);
-            std::basic_string<CharT> month = 
-                DUtility::tostr<CharT>(TimeStruct->tm_mon + 1);
+                gmtime_s(&TimeStruct, &temptime);
+            std::basic_string<CharT> year =
+                inttostr<CharT>(TimeStruct.tm_year + 1900);
+            std::basic_string<CharT> month =
+                inttostr<CharT>(TimeStruct.tm_mon + 1);
             if (month.size() < 2)
                 month.insert(month.begin(), (CharT)'0');
-            std::basic_string<CharT> day = 
-                DUtility::tostr<CharT>(TimeStruct->tm_mday);
+            std::basic_string<CharT> day =
+                inttostr<CharT>(TimeStruct.tm_mday);
             if (day.size() < 2)
                 day.insert(day.begin(), (CharT)'0');
-            std::basic_string<CharT> hour = 
-                DUtility::tostr<CharT>(TimeStruct->tm_hour);
+            std::basic_string<CharT> hour =
+                inttostr<CharT>(TimeStruct.tm_hour);
             if (hour.size() < 2)
                 hour.insert(hour.begin(), (CharT)'0');
-            std::basic_string<CharT> min = 
-                DUtility::tostr<CharT>(TimeStruct->tm_min);
+            std::basic_string<CharT> min =
+                inttostr<CharT>(TimeStruct.tm_min);
             if (min.size() < 2)
                 min.insert(min.begin(), (CharT)'0');
-            std::basic_string<CharT> sec = 
-                DUtility::tostr<CharT>(TimeStruct->tm_sec);
+            std::basic_string<CharT> sec =
+                inttostr<CharT>(TimeStruct.tm_sec);
             if (sec.size() < 2)
                 sec.insert(sec.begin(), (CharT)'0');
-            std::basic_string<CharT> msec = 
-                DUtility::tostr<CharT>((int)((time_ - (int)time_) * 1e3));
-            if (_format == (std::basic_string<CharT>)"YYYY/MM/DD" || 
+            std::basic_string<CharT> msec =
+                inttostr<CharT>((int)((time_ - (int)time_) * 1e3));
+            if (_format == (std::basic_string<CharT>)"YYYY/MM/DD" ||
                 _format == (std::basic_string<CharT>)"yyyy/mm/dd")
             {
                 return year + (CharT)'/' + month + (CharT)'/' + day;
             }
-            else if (_format == (std::basic_string<CharT>)"YY/MM/MM" || 
+            else if (_format == (std::basic_string<CharT>)"YY/MM/DD" ||
                 _format == (std::basic_string<CharT>)"yy/mm/dd")
             {
                 year.erase(year.begin(), year.begin() + 2);
                 return year + (CharT)'/' + month + (CharT)'/' + day;
             }
-            else if (_format == (std::basic_string<CharT>)"YYYY-MM-DD" || 
+            else if (_format == (std::basic_string<CharT>)"YYYY-MM-DD" ||
                 _format == (std::basic_string<CharT>)"yyyy-mm-dd")
             {
                 return year + (CharT)'-' + month + (CharT)'-' + day;
             }
-            else if (_format == (std::basic_string<CharT>)"YY-MM-DD" || 
+            else if (_format == (std::basic_string<CharT>)"YY-MM-DD" ||
                 _format == (std::basic_string<CharT>)"yy-mm-dd")
             {
                 year.erase(year.begin(), year.begin() + 2);
                 return year + (CharT)'-' + month + (CharT)'-' + day;
             }
-            else if (_format == (std::basic_string<CharT>)"HH:MM:SS" || 
+            else if (_format == (std::basic_string<CharT>)"HH:MM:SS" ||
                 _format == (std::basic_string<CharT>)"hh:mm:ss")
             {
                 return hour + (CharT)':' + min + (CharT)':' + sec;
             }
-            else if (_format == (std::basic_string<CharT>)"HH:MM:SS.XXX" || 
+            else if (_format == (std::basic_string<CharT>)"HH:MM:SS.XXX" ||
                 _format == (std::basic_string<CharT>)"hh:mm:ss.xxx")
             {
                 return hour + (CharT)':' + min + (CharT)':' + sec + (CharT)'.' + msec;
@@ -369,6 +379,8 @@ namespace TimeLibary
             else
                 return (std::basic_string<CharT>)"";
         }
+
+        friend DTime operator-(const DTime &_time) noexcept;
 
         static DTime Now()
         {
@@ -381,6 +393,11 @@ namespace TimeLibary
         }
 
     }; // class DTime
+
+    inline DTime operator-(const DTime &_time) noexcept
+    {
+        return DTime(-_time.time_);
+    }
 
     inline DTime operator+(DTime::DTimeType _time, const DTime &_dtime) noexcept
     {
@@ -481,14 +498,133 @@ namespace TimeLibary
         return DTime((DTime::DTimeType)_nanosecond / 1e9);
     }
 
-    inline DTime GetFileTime(const std::filesystem::path &_FilePath)
+    inline DTime GetFileTime(const std::filesystem::path &_filepath)
     {
         return DTime(std::time_t(std::chrono::duration_cast<std::chrono::seconds>(
-            std::filesystem::last_write_time(_FilePath).time_since_epoch() -
+            std::filesystem::last_write_time(_filepath).time_since_epoch() -
             std::filesystem::file_time_type::clock::now().time_since_epoch() +
             std::chrono::system_clock::now().time_since_epoch())
             .count()));
     }
+
+    template <class CharT>
+    std::basic_string<CharT> inttostr(long long _num) noexcept
+    {
+        return std::basic_string<CharT>();
+    }
+
+    template <>
+    std::basic_string<char> inttostr(long long _num) noexcept
+    {
+        return std::to_string(_num);
+    }
+
+    template <>
+    std::basic_string<wchar_t> inttostr(long long _num) noexcept
+    {
+        return std::to_wstring(_num);
+    }
+
+    template <class CharT>
+    DTime StringtoDTime(const std::basic_string<CharT> &_target) noexcept
+    {
+        auto stoi_ = [](const std::basic_string<CharT> &_target)
+        {
+            try
+            {
+                return std::stoul(_target);
+            }
+            catch (const std::exception &)
+            {
+                return (unsigned long)-1;
+            }
+        };
+        auto tempstr = _target;
+        std::vector<std::basic_string<CharT>> result, dayresult, timeresult;
+        using DUtility::split;
+        bool isnegative = false;
+        if (tempstr.front() == (CharT)'-')  // 
+        {
+            isnegative = true;
+            tempstr.erase(0, 1);
+        }
+        if (split(result, tempstr, (CharT)' '))
+        {
+            const auto resnum = result.size();
+            if (resnum == 2)
+            {
+                if ((split(dayresult, result[0], '/') ||
+                    split(dayresult, result[0], '-')) &&
+                    (dayresult.size() != 3))
+                    return DTime();
+                if (split(timeresult, result[1], ':') &&
+                    (timeresult.size() != 3))
+                    return DTime();
+                split(timeresult, timeresult[2], '.');
+                timeresult.erase(timeresult.begin() + 2);
+            }
+            else if (resnum < 2)
+            {
+                if ((split(dayresult, result[0], '/') ||
+                    split(dayresult, result[0], '-')) &&
+                    (dayresult.size() != 3))
+                {
+                    if (split(timeresult, result[1], ':') &&
+                        (timeresult.size() != 3))
+                        return DTime();
+                    split(timeresult, timeresult[2], '.');
+                    timeresult.erase(timeresult.begin() + 2);
+                }
+            }
+            else
+                return DTime();
+        }
+        else
+        {
+            if ((split(dayresult, result[0], '/') ||
+                split(dayresult, result[0], '-')) &&
+                (dayresult.size() != 3))
+            {
+                if (split(timeresult, result[1], ':') &&
+                    (timeresult.size() != 3))
+                    return DTime();
+                split(timeresult, timeresult[2], '.');
+                timeresult.erase(timeresult.begin() + 2);
+            }
+        }
+
+        unsigned long day[3] = {0}, time[4] = {0};
+        for (int i = 0; i < dayresult.size(); ++i)
+            day[i] = stoi_(dayresult[i]);
+        for (int i = 0; i < timeresult.size(); ++i)
+            time[i] = stoi_(timeresult[i]);
+        if(day[0] < 100)    // Get current century. If year was input as XX, set the year as current century.
+        {
+            std::tm tm_;
+            std::time_t t_ = std::time(nullptr);
+            localtime_s(&tm_, &t_);
+            day[0] += ((int)((tm_.tm_year + 1900) / 100)) * 100;
+        }
+
+        if (0 >= (int)(day[1] -= 2))  /* 1..12 -> 11,12,1..10 */
+        {    
+            day[1] += 12;      /* Puts Feb last since it has leap day */
+            day[0] -= 1;
+        }
+        
+        return (DTime)(((((
+            day[0] / 4 - day[0] / 100 + day[0] / 400) +
+            (day[0] - 1) * 365 +
+            day[1] * 367 / 12 + 31 + 28 - 30 +
+            day[2] - 1 - 693595/* since 1900 */
+            ) * 24 + time[0]
+            ) * 60 + time[1]
+            ) * 60 + time[2] +
+            (double)time[3] / 1000);
+       
+    }
+
+   
 
 } // namespace TimeLibary
 
